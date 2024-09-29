@@ -1,0 +1,6 @@
+numpy
+pandas
+apyori
+scikit-learn
+imblearn
+pulp
