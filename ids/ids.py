@@ -132,3 +132,23 @@ class IDSModel:
         print("Reglas seleccionadas:")
         for rule in self.selected_rules:
             print(rule)
+    
+    def print_rules_in_dt_format(self):
+        """
+        Imprime las reglas seleccionadas en el formato solicitado similar a DT.
+        """
+        formatted_rules = []
+        for rule in self.selected_rules:
+            conditions = rule.conditions
+            outcome = rule.class_label
+
+            # Construir la regla formateada
+            formatted_rule = "si " + " y ".join([f"{feature} ≤ {value}" if isinstance(value, (int, float)) and float(value) <= 0.5 else f"{feature} > {value}" for feature, value in conditions])
+            
+            formatted_rule += f" entonces {outcome}"
+            formatted_rules.append(formatted_rule)
+
+        # Imprimir las reglas formateadas
+        print("\nReglas de decisión en el formato solicitado:")
+        for rule in formatted_rules:
+            print(rule)
