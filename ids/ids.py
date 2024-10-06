@@ -125,30 +125,37 @@ class IDSModel:
                 predictions.append(0)  # Clase por defecto si ninguna regla coincide
         return np.array(predictions)
 
-    def print_rules(self):
-        """
-        Imprime las reglas seleccionadas por el modelo.
-        """
-        print("Reglas seleccionadas:")
+    def print_rules(self, X_train=None, y_train=None):
+    """
+    Imprime las reglas seleccionadas por el modelo en el formato similar a DT, incluyendo precisión y muestras.
+    """
+    if X_train is None or y_train is None:
+        print("Advertencia: No se proporcionaron X_train e y_train. Las reglas se imprimirán sin precisión ni muestras.")
+        # Si no se proporcionan X_train e y_train, imprime las reglas sin precisión ni muestras
         for rule in self.selected_rules:
-            print(rule)
-    
-    def print_rules_in_dt_format(self):
-        """
-        Imprime las reglas seleccionadas en el formato solicitado similar a DT.
-        """
-        formatted_rules = []
-        for rule in self.selected_rules:
-            conditions = rule.conditions
-            outcome = rule.class_label
+            conditions = " y ".join([f"{feature} ≤ {value}" if isinstance(value, (int, float)) and float(value) <= 0.5 else f"{feature} > {value}" for feature, value in rule.conditions])
+            print(f"si {conditions} entonces {rule.class_label}")
+        return
 
-            # Construir la regla formateada
-            formatted_rule = "si " + " y ".join([f"{feature} ≤ {value}" if isinstance(value, (int, float)) and float(value) <= 0.5 else f"{feature} > {value}" for feature, value in conditions])
-            
-            formatted_rule += f" entonces {outcome}"
-            formatted_rules.append(formatted_rule)
+    # Si se proporcionan X_train e y_train, imprime las reglas con precisión y muestras
+    print("Reglas seleccionadas en el formato solicitado con precisión y muestras:")
+    for rule in self.selected_rules:
+        conditions = rule.conditions
+        outcome = rule.class_label
 
-        # Imprimir las reglas formateadas
-        print("\nReglas de decisión en el formato solicitado:")
-        for rule in formatted_rules:
-            print(rule)
+        # Determinar las muestras cubiertas por la regla
+        covered_samples = [i for i, row in X_train.iterrows() if rule.covers(row)]
+        num_samples = len(covered_samples)
+        if num_samples > 0:
+            correct_samples = sum([1 for i in covered_samples if y_train.iloc[i] == outcome])
+            precision = correct_samples / num_samples
+        else:
+            precision = 0
+
+        # Construir la regla formateada
+        formatted_rule = "si " + " y ".join([f"{feature} ≤ {value}" if isinstance(value, (int, float)) and float(value) <= 0.5 else f"{feature} > {value}" for feature, value in conditions])
+        formatted_rule += f" entonces {outcome} (Precisión: {precision:.2f}, Muestras: {num_samples})"
+        
+        # Imprimir la regla formateada
+        print(formatted_rule)
+
