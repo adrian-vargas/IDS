@@ -6,8 +6,9 @@ from .utils import generate_candidate_rules, calculate_rule_metrics
 from .models.rule import Rule
 from pulp import LpProblem, LpVariable, LpBinary, lpSum, LpMinimize, PULP_CBC_CMD, LpStatus
 from itertools import combinations
+from sklearn.base import BaseEstimator
 
-class IDSModel:
+class IDSModel(BaseEstimator):
     def __init__(self, lambda1=0.1, lambda2=0.1, lambda3=1.0, lambda4=1.0,
                  min_support=0.05, min_confidence=0.6, max_rule_length=3):
         """
@@ -47,6 +48,47 @@ class IDSModel:
 
         # Obtener las reglas seleccionadas
         self.selected_rules = self._get_optimal_rules(prob, rule_vars)
+
+    def predict(self, X):
+        """
+        Realiza predicciones en los datos proporcionados utilizando las reglas seleccionadas.
+        """
+        df_X = X.astype(str)
+        predictions = []
+        for _, row in df_X.iterrows():
+            x = row.to_dict()
+            votes = []
+            for rule in self.selected_rules:
+                if rule.covers(x):
+                    votes.append(rule.class_label)
+            if votes:
+                pred = max(set(votes), key=votes.count)
+                predictions.append(pred)
+            else:
+                predictions.append(0)  # Clase por defecto si ninguna regla coincide
+        return np.array(predictions)
+
+    def get_params(self, deep=True):
+        """
+        Devuelve los parámetros del modelo para GridSearchCV.
+        """
+        return {
+            'lambda1': self.lambda1,
+            'lambda2': self.lambda2,
+            'lambda3': self.lambda3,
+            'lambda4': self.lambda4,
+            'min_support': self.min_support,
+            'min_confidence': self.min_confidence,
+            'max_rule_length': self.max_rule_length
+        }
+
+    def set_params(self, **params):
+        """
+        Ajusta los parámetros del modelo para GridSearchCV.
+        """
+        for key, value in params.items():
+            setattr(self, key, value)
+        return self
 
     def _formulate_optimization_problem(self, rule_covers, rule_correct_covers, rule_lengths, df):
         """
