@@ -138,7 +138,7 @@ class IDSModel:
             return
 
         # Si se proporcionan X_train e y_train, imprime las reglas con precisión y muestras
-        print("Reglas seleccionadas en el formato solicitado con precisión y muestras:")
+        print("\nReglas seleccionadas con precisión y muestras:")
         for rule in self.selected_rules:
             conditions = rule.conditions
             outcome = rule.class_label
