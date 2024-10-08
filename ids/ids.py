@@ -125,36 +125,36 @@ class IDSModel:
                 predictions.append(0)  # Clase por defecto si ninguna regla coincide
         return np.array(predictions)
 
-    def print_rules(self, X_train=None, y_train=None):
-        """
-        Imprime las reglas seleccionadas por el modelo en el formato similar a DT, incluyendo precisión y muestras.
-        """
-        if X_train is None or y_train is None:
-            print("Advertencia: No se proporcionaron X_train e y_train. Las reglas se imprimirán sin precisión ni muestras.")
-            # Si no se proporcionan X_train e y_train, imprime las reglas sin precisión ni muestras
-            for rule in self.selected_rules:
-                conditions = " y ".join([f"{feature} ≤ {value}" if isinstance(value, (int, float)) and float(value) <= 0.5 else f"{feature} > {value}" for feature, value in rule.conditions])
-                print(f"si {conditions} entonces {rule.class_label}")
-            return
-
-        # Si se proporcionan X_train e y_train, imprime las reglas con precisión y muestras
-        print("Reglas seleccionadas en el formato solicitado con precisión y muestras:")
+    def print_rules(self, X_train=None, y_train=None, label_mapping=None):
+    if label_mapping is None:
+        label_mapping = {0: 'Reprobado', 1: 'Aprobado'}  # Mapeo predeterminado para 0 y 1
+    
+    if X_train is None or y_train is None:
+        print("Advertencia: No se proporcionaron X_train e y_train. Las reglas se imprimirán sin precisión ni muestras.")
+        # Si no se proporcionan X_train e y_train, imprime las reglas sin precisión ni muestras
         for rule in self.selected_rules:
-            conditions = rule.conditions
-            outcome = rule.class_label
+            conditions = " y ".join([f"{feature} ≤ {value}" if isinstance(value, (int, float)) and float(value) <= 0.5 else f"{feature} > {value}" for feature, value in rule.conditions])
+            print(f"si {conditions} entonces {label_mapping.get(rule.class_label, rule.class_label)}")
+        return
 
-            # Determinar las muestras cubiertas por la regla
-            covered_samples = [i for i, row in X_train.iterrows() if rule.covers(row)]
-            num_samples = len(covered_samples)
-            if num_samples > 0:
-                correct_samples = sum([1 for i in covered_samples if y_train.iloc[i] == outcome])
-                precision = correct_samples / num_samples
-            else:
-                precision = 0
+    # Si se proporcionan X_train e y_train, imprime las reglas con precisión y muestras
+    print("Reglas seleccionadas en el formato solicitado con precisión y muestras:")
+    for rule in self.selected_rules:
+        conditions = rule.conditions
+        outcome = rule.class_label
 
-            # Construir la regla formateada
-            formatted_rule = "si " + " y ".join([f"{feature} ≤ {value}" if isinstance(value, (int, float)) and float(value) <= 0.5 else f"{feature} > {value}" for feature, value in conditions])
-            formatted_rule += f" entonces {outcome} (Precisión: {precision:.2f}, Muestras: {num_samples})"
+        # Determinar las muestras cubiertas por la regla
+        covered_samples = [i for i, row in X_train.iterrows() if rule.covers(row)]
+        num_samples = len(covered_samples)
+        if num_samples > 0:
+            correct_samples = sum([1 for i in covered_samples if y_train.iloc[i] == outcome])
+            precision = correct_samples / num_samples
+        else:
+            precision = 0
 
-            # Imprimir la regla formateada
-            print(formatted_rule)
+        # Construir la regla formateada
+        formatted_rule = "si " + " y ".join([f"{feature} ≤ {value}" if isinstance(value, (int, float)) and float(value) <= 0.5 else f"{feature} > {value}" for feature, value in conditions])
+        formatted_rule += f" entonces {label_mapping.get(outcome, outcome)} (Precisión: {precision:.2f}, Muestras: {num_samples})"
+
+        # Imprimir la regla formateada
+        print(formatted_rule)
