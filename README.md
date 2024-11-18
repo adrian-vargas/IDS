@@ -3,6 +3,8 @@
 
 IDS es una librería en Python diseñada para entrenar modelos de Interpretable Decision Sets (IDS), un tipo de modelo de inteligencia artificial que genera conjuntos de reglas interpretables. Estos modelos son útiles en aplicaciones donde la interpretabilidad es esencial, ya que permiten comprender las decisiones tomadas por el modelo a través de reglas simples y concisas.
 
+Esta librería está basada en el repositorio [pyIDS](https://github.com/jirifilip/pyIDS) y en el estudio sobre IDS realizado por Lakkaraju et al. (2016), quienes propusieron este marco para construir modelos predictivos que optimizan tanto la precisión como la interpretabilidad. Adaptamos y extendimos ideas clave del repositorio original y del trabajo académico para desarrollar una implementación ajustada a los requisitos de nuestro proyecto y experimentación.
+
 ## Características
 
 - **Generación de reglas interpretables** a partir de datos.
@@ -16,12 +18,12 @@ IDS es una librería en Python diseñada para entrenar modelos de Interpretable 
 Para instalar la librería, clona el repositorio y utiliza `pip` para instalar las dependencias:
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
+git clone https://github.com/adrian-vargas/IDS.git
 cd IDS
 pip install -r requirements.txt
 ```
 
-Asegúrate de tener Python 3.7 o superior.
+Asegúrate de tener Python 3.12.5 o superior.
 
 ### Dependencias
 
