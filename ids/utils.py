@@ -7,6 +7,7 @@ from graphviz import Digraph
 import matplotlib.pyplot as plt
 from PIL import Image
 from io import BytesIO
+from .models.rule import Rule
 
 def generate_candidate_rules(df, min_support=0.05, min_confidence=0.6, max_length=3, boolean_cols=None):
     """
