@@ -1,5 +1,6 @@
 # ids/__init__.py
 
+from .models.rule import Rule
 from .ids import IDSModel
 from .metrics import (
     calculate_ids_interpretability_metrics,
@@ -8,6 +9,8 @@ from .metrics import (
     calculate_ids_probabilities
 )
 from .utils import (
+    generate_candidate_rules,
+    calculate_rule_metrics,
     print_and_save_rules,
     visualize_ids_rules,
     generate_ids_global_graph,
