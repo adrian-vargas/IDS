@@ -1,6 +1,5 @@
 # ids/__init__.py
 
-from .models.rule import Rule
 from .ids import IDSModel
 from .metrics import (
     calculate_ids_interpretability_metrics,
