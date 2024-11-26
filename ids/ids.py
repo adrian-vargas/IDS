@@ -6,6 +6,7 @@ from pulp import LpProblem, LpVariable, LpBinary, lpSum, LpMinimize, PULP_CBC_CM
 from itertools import combinations
 from sklearn.base import BaseEstimator
 from .utils import generate_candidate_rules, calculate_rule_metrics
+from .models.rule import Rule
 
 class IDSModel(BaseEstimator):
     def __init__(self, lambda1=0.1, lambda2=0.1, lambda3=1.0, lambda4=1.0,
