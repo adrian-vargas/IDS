@@ -2,8 +2,6 @@
 
 import numpy as np
 import pandas as pd
-from .utils import generate_candidate_rules, calculate_rule_metrics
-from .models.rule import Rule
 from pulp import LpProblem, LpVariable, LpBinary, lpSum, LpMinimize, PULP_CBC_CMD, LpStatus
 from itertools import combinations
 from sklearn.base import BaseEstimator
@@ -21,20 +19,23 @@ class IDSModel(BaseEstimator):
         self.min_support = min_support
         self.min_confidence = min_confidence
         self.max_rule_length = max_rule_length
-        self.rules = []
-        self.selected_rules = []
+        self.boolean_cols = None
 
     def fit(self, X, y):
         """
         Entrena el modelo IDS con los datos proporcionados.
         """
+        # Identificar columnas booleanas en X (asumiendo valores 0/1)
+        self.boolean_cols = [col for col in X.columns if set(X[col].unique()).issubset({0, 1})]
+        print(f"Columnas identificadas como booleanas: {self.boolean_cols}")
+
         # Combinar X e y en un DataFrame
         df = X.copy()
         df['target'] = y.values
-        df = df.astype(str)
+        df = df.astype(str)  # Convertir a cadenas para Apriori
 
         # Generar reglas candidatas
-        self.rules = generate_candidate_rules(df, self.min_support, self.min_confidence, self.max_rule_length)
+        self.rules = generate_candidate_rules(df, self.min_support, self.min_confidence, self.max_rule_length, boolean_cols=self.boolean_cols)
 
         if not self.rules:
             raise ValueError("No se generaron reglas candidatas. Ajusta los parámetros de soporte y confianza.")
@@ -59,7 +60,7 @@ class IDSModel(BaseEstimator):
             x = row.to_dict()
             votes = []
             for rule in self.selected_rules:
-                if rule.covers(x):
+                if rule.covers(x):  # Eliminado boolean_cols=self.boolean_cols
                     votes.append(rule.class_label)
             if votes:
                 pred = max(set(votes), key=votes.count)
@@ -148,41 +149,20 @@ class IDSModel(BaseEstimator):
                 selected_rules.append(self.rules[r])
         return selected_rules
 
-    def predict(self, X):
-        """
-        Realiza predicciones en los datos proporcionados utilizando las reglas seleccionadas.
-        """
-        df_X = X.astype(str)
-        predictions = []
-        for _, row in df_X.iterrows():
-            x = row.to_dict()
-            votes = []
-            for rule in self.selected_rules:
-                if rule.covers(x):
-                    votes.append(rule.class_label)
-            if votes:
-                pred = max(set(votes), key=votes.count)
-                predictions.append(pred)
-            else:
-                predictions.append(0)  # Clase por defecto si ninguna regla coincide
-        return np.array(predictions)
-
     def print_rules(self, X_train=None, y_train=None, label_mapping=None):
         if label_mapping is None:
             label_mapping = {0: 'Reprobado', 1: 'Aprobado'}  # Mapeo predeterminado para 0 y 1
-        
+
         if X_train is None or y_train is None:
             print("Advertencia: No se proporcionaron X_train e y_train. Las reglas se imprimirán sin precisión ni muestras.")
             # Si no se proporcionan X_train e y_train, imprime las reglas sin precisión ni muestras
             for rule in self.selected_rules:
-                conditions = " y ".join([f"{feature} ≤ {value}" if isinstance(value, (int, float)) and float(value) <= 0.5 else f"{feature} > {value}" for feature, value in rule.conditions])
-                print(f"si {conditions} entonces {label_mapping.get(rule.class_label, rule.class_label)}")
+                print(rule)  # Utiliza el método __repr__ de Rule
             return
 
         # Si se proporcionan X_train e y_train, imprime las reglas con precisión y muestras
         print("\nReglas seleccionadas con precisión y muestras:")
         for rule in self.selected_rules:
-            conditions = rule.conditions
             outcome = rule.class_label
 
             # Determinar las muestras cubiertas por la regla
@@ -194,9 +174,7 @@ class IDSModel(BaseEstimator):
             else:
                 precision = 0
 
-            # Construir la regla formateada
-            formatted_rule = "si " + " y ".join([f"{feature} ≤ {value}" if isinstance(value, (int, float)) and float(value) <= 0.5 else f"{feature} > {value}" for feature, value in conditions])
-            formatted_rule += f" entonces {label_mapping.get(outcome, outcome)} (Precisión: {precision:.2f}, Muestras: {num_samples})"
-
-            # Imprimir la regla formateada
+            # Imprimir la regla formateada utilizando __repr__
+            formatted_rule = f"{rule} (Precisión: {precision:.2f}, Muestras: {num_samples})"
             print(formatted_rule)
+

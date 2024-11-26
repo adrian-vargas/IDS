@@ -1,18 +1,27 @@
 # ids/models/rule.py
 
 class Rule:
-    def __init__(self, conditions, class_label):
-        """
-        Inicializa una regla con sus condiciones y la etiqueta de clase.
-        """
+    def __init__(self, conditions, class_label, boolean_cols=None):
         self.conditions = conditions  # Lista de tuplas (feature, value)
         self.class_label = class_label
+        self.boolean_cols = boolean_cols if boolean_cols is not None else []
 
     def covers(self, x):
-        """
-        Verifica si la regla cubre una muestra dada.
-        """
-        return all(str(x.get(feature, -1)) == str(value) for feature, value in self.conditions)
+        for feature, value in self.conditions:
+            feature_value = x.get(feature, -1)
+            try:
+                feature_value = float(feature_value)
+                value = float(value)
+                if feature in self.boolean_cols:
+                    if int(round(feature_value)) != int(value):
+                        return False
+                else:
+                    if feature_value <= value:
+                        return False
+            except ValueError:
+                if str(feature_value) != str(value):
+                    return False
+        return True
 
     def __len__(self):
         """
@@ -21,8 +30,21 @@ class Rule:
         return len(self.conditions)
 
     def __repr__(self):
-        """
-        Representación en cadena de la regla.
-        """
-        conditions_str = ' AND '.join([f"{feature}={value}" for feature, value in self.conditions])
-        return f"IF {conditions_str} THEN {self.class_label}"
+        # Mapeo de etiquetas
+        label_mapping = {0: 'Reprobado', 1: 'Aprobado'}
+
+        # Función para formatear valores
+        def format_value(value):
+            if isinstance(value, float) and value.is_integer():
+                return str(int(value))
+            elif isinstance(value, int):
+                return str(value)
+            else:
+                return str(value)
+
+        conditions_str = ' y '.join([
+            f"{feature}={format_value(value)}" if feature in self.boolean_cols else f"{feature} > {format_value(value)}"
+            for feature, value in self.conditions
+        ])
+        class_label_str = label_mapping.get(self.class_label, self.class_label)
+        return f"si {conditions_str} entonces {class_label_str}"
