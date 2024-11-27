@@ -1,17 +1,38 @@
 
 # IDS - Interpretable Decision Sets
 
-IDS es una librería en Python diseñada para entrenar modelos de Interpretable Decision Sets (IDS), un tipo de modelo de inteligencia artificial que genera conjuntos de reglas interpretables. Estos modelos son útiles en aplicaciones donde la interpretabilidad es esencial, ya que permiten comprender las decisiones tomadas por el modelo a través de reglas simples y concisas.
+IDS es una librería en Python diseñada para entrenar modelos de Interpretable Decision Sets (IDS), un marco de modelos de inteligencia artificial transparente que genera conjuntos de reglas fácilmente interpretables. Estos modelos son ideales para aplicaciones donde la transparencia y la interpretabilidad.
 
-Esta librería está basada en el repositorio [pyIDS](https://github.com/jirifilip/pyIDS) y en el estudio sobre IDS realizado por Lakkaraju et al. (2016), quienes propusieron este marco para construir modelos predictivos que optimizan tanto la precisión como la interpretabilidad. Adaptamos y extendimos ideas clave del repositorio original y del trabajo académico para desarrollar una implementación ajustada a los requisitos de nuestro proyecto y experimentación.
+Este proyecto es parte del Trabajo de Fin de Máster (TFM) *A Tool for Human Evaluation of Interpretability* realizado por Adrián Vargas en la Universidad Politécnica de Madrid. La librería IDS implementa y extiende ideas clave del estudio de [Lakkaraju et al. (2016)](https://cs.stanford.edu/people/jure/pubs/interpretable-kdd16.pdf) y el repositorio original [pyIDS](https://github.com/jirifilip/pyIDS), optimizando tanto la precisión como la interpretabilidad.
 
-## Características
+## Características Técnicas
 
-- **Generación de reglas interpretables** a partir de datos.
-- **Optimización de reglas** basada en métricas como soporte, confianza y cobertura.
-- **Balanceo de clases** en los datos mediante SMOTE.
-- **Preprocesamiento de datos** con discretización y codificación One-Hot.
-- **Integración con scikit-learn** para facilitar el uso en pipelines de aprendizaje automático.
+- **Generación de reglas interpretables**: Utiliza Apriori para crear reglas basadas en soporte y confianza.
+- **Optimización mediante programación lineal**: Garantiza un equilibrio entre precisión y simplicidad de las reglas.
+- **Análisis de interpretabilidad**: Calcula métricas como sparsity, coverage, gini y parsimony.
+- **Visualización avanzada**: Incluye gráficos globales y explicaciones locales mediante Graphviz y Matplotlib.
+- **Balanceo de datos**: Compatibilidad con SMOTE para mejorar la distribución de clases.
+
+## Estructura del Proyecto
+
+```
+IDS/
+│
+├── ids/                       # Código principal de la librería
+│   ├── models/                # Definición de modelos y clases relacionadas
+│   │   ├── __init__.py
+│   │   └── rule.py            # Implementación de la clase Rule
+│   ├── __init__.py
+│   ├── ids.py                 # Implementación del modelo IDS
+│   ├── metrics.py             # Cálculo de métricas de interpretabilidad
+│   └── utils.py               # Funciones auxiliares para generación y visualización de reglas
+├── venv/                      # Entorno virtual (opcional)
+├── .gitignore
+├── LICENSE
+├── README.md                  # Documentación del proyecto
+├── requirements.txt           # Dependencias del proyecto
+└── setup.py                   # Archivo de configuración para la instalación
+```
 
 ## Instalación
 
@@ -25,104 +46,61 @@ pip install -r requirements.txt
 
 Asegúrate de tener Python 3.12.5 o superior.
 
-### Dependencias
-
-Las principales dependencias de la librería incluyen:
-
-- `numpy`
-- `pandas`
-- `apyori`
-- `scikit-learn`
-- `imbalanced-learn` (para SMOTE)
-- `pulp` (para resolver problemas de optimización)
-
-## Estructura del Proyecto
-
-La estructura del proyecto es la siguiente:
-
-```
-IDS/
-│
-├── ids/                       # Código principal de la librería
-│   ├── datasets/              # Carga y preprocesamiento de datos
-│   │   ├── __init__.py
-│   │   └── preprocessing.py
-│   ├── models/                # Definición de modelos y clases relacionadas
-│   │   ├── __init__.py
-│   │   └── rule.py
-│   ├── __init__.py
-│   ├── ids.py                 # Implementación del modelo IDS
-│   └── utils.py               # Funciones auxiliares
-├── venv/                      # Entorno virtual (opcional)
-├── .gitignore
-├── LICENSE
-├── README.md                  # Documentación del proyecto
-├── requirements.txt           # Dependencias del proyecto
-└── setup.py                   # Archivo de configuración para la instalación
-```
-
-## Uso
+## Ejemplo de Uso
 
 ### 1. Importación y Configuración del Modelo IDS
 
 ```python
 from ids import IDSModel
-from ids.datasets import load_and_preprocess_data, balance_data, split_data
+from ids.utils import generate_candidate_rules, print_and_save_rules
 ```
 
-### 2. Cargar y Preprocesar los Datos
-
-```python
-# Cargar y preprocesar el dataset
-X, y = load_and_preprocess_data("ruta/dataset.csv", target_column="G3", target_threshold=10)
-X_balanced, y_balanced = balance_data(X, y)
-X_train, X_test, y_train, y_test = split_data(X_balanced, y_balanced, test_size=0.3)
-```
-
-### 3. Entrenar el Modelo IDS
+### 2. Entrenamiento del Modelo IDS
 
 ```python
 # Inicializar y entrenar el modelo IDS
-model = IDSModel(lambda1=0.1, lambda2=0.1, lambda3=1.0, lambda4=1.0)
-model.fit(X_train, y_train)
+ids_model = IDSModel(lambda1=0.1, lambda2=0.1, lambda3=1.0, lambda4=1.0, min_support=0.05, min_confidence=0.6, max_rule_length=3)
+ids_model.fit(X_train, y_train)
 ```
 
-### 4. Realizar Predicciones
+### 3. Visualización de Reglas
 
 ```python
-# Realizar predicciones en el conjunto de prueba
-predictions = model.predict(X_test)
+# Imprimir y guardar las reglas seleccionadas
+rules_df = print_and_save_rules(ids_model, X_train, y_train, output_file="ids_rules.csv")
+
+# Visualizar las reglas globalmente
+from ids.utils import visualize_ids_rules
+visualize_ids_rules(rules_df)
 ```
 
-### 5. Imprimir las Reglas Seleccionadas
+## Funcionalidades Clave
 
-```python
-# Imprimir las reglas interpretables generadas por el modelo
-model.print_rules(X_train, y_train, label_mapping={0: "Reprobado", 1: "Aprobado"})
-```
+- **`IDSModel`**: Entrenamiento y predicción con reglas interpretables.
+- **Métricas de Interpretabilidad**:
+  - `calculate_ids_interpretability_metrics`: Analiza precisión, sparsity, parsimony y cobertura.
+  - `calculate_correct_incorrect_cover`: Evalúa qué tan bien cubren las reglas los datos.
+- **Visualización**:
+  - `visualize_ids_rules`: Genera diagramas globales y locales para las reglas seleccionadas.
 
-## Parámetros
+## Contribuciones
 
-Al inicializar el modelo `IDSModel`, puedes configurar los siguientes parámetros:
+La librería **IDS** es una solución ideal para aplicaciones donde la interpretabilidad del modelo es crucial. Sus características principales la convierten en una herramienta versátil y eficiente para proyectos de inteligencia artificial explicable (XAI):
 
-- `lambda1`, `lambda2`, `lambda3`, `lambda4`: Pesos de regularización en la función objetivo del modelo IDS.
-- `min_support`: Soporte mínimo requerido para una regla.
-- `min_confidence`: Confianza mínima requerida para una regla.
-- `max_rule_length`: Longitud máxima permitida para las reglas generadas.
+1. **Entornos sensibles a la interpretabilidad**  
+   Diseñada para casos como educación o finanzas, donde se requiere que los usuarios comprendan y confíen en las decisiones del modelo. Ejemplo: clasificar el rendimiento académico o explicar decisiones financieras de forma transparente.
 
-## Funciones
+2. **Proyectos de investigación en XAI**  
+   IDS es una alternativa menos compleja y más eficiente que **Smooth Local Search (SLS)**, gracias a:
+   - **Programación lineal optimizada**: Selección de reglas mediante el solver PuLP para evitar redundancias y simplificar la búsqueda.
+   - **Menor consumo computacional**: Ideal para sistemas con recursos limitados o datasets moderados.
+   - **Flexibilidad**: Configuraciones avanzadas para soporte, confianza y longitud máxima de reglas.
 
-### IDSModel
+3. **Visualización integrada y explicaciones claras**  
+   Con herramientas como Graphviz y Matplotlib, IDS permite generar explicaciones locales y globales de manera intuitiva, facilitando el análisis de reglas.
 
-- `fit(X, y)`: Entrena el modelo IDS utilizando los datos de entrenamiento.
-- `predict(X)`: Realiza predicciones para los datos de entrada utilizando las reglas seleccionadas.
-- `print_rules(X_train=None, y_train=None, label_mapping=None)`: Imprime las reglas interpretables seleccionadas por el modelo. Si se proporcionan datos de entrenamiento, muestra también la precisión y el número de muestras cubiertas por cada regla.
-
-### Preprocesamiento de Datos
-
-- `load_and_preprocess_data(file_path, target_column, sep=';', target_threshold=None)`: Carga y preprocesa los datos, convirtiendo variables numéricas en clases binarias si se proporciona un umbral.
-- `balance_data(X, y)`: Balancea las clases en los datos utilizando SMOTE.
-- `split_data(X, y, test_size=0.2, random_state=42)`: Divide los datos en conjuntos de entrenamiento y prueba.
+4. **Integración sencilla con `scikit-learn`**  
+   Su arquitectura modular la hace fácilmente integrable en pipelines de aprendizaje automático existentes, permitiendo personalizaciones según el contexto del proyecto.
 
 ## Licencia
 

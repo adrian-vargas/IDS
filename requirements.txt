@@ -4,3 +4,6 @@ apyori
 scikit-learn
 imblearn
 pulp
+matplotlib
+graphviz
+pillow
