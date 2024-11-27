@@ -85,10 +85,10 @@ visualize_ids_rules(rules_df)
 
 ## Contribuciones
 
-La librería **IDS** es una solución ideal para aplicaciones donde la interpretabilidad del modelo es crucial. Sus características principales la convierten en una herramienta versátil y eficiente para proyectos de inteligencia artificial explicable (XAI):
+La librería **IDS** es una alternativa adecuada para proyectos de inteligencia artificial explicable (XAI):
 
 1. **Entornos sensibles a la interpretabilidad**  
-   Diseñada para casos como educación o finanzas, donde se requiere que los usuarios comprendan y confíen en las decisiones del modelo. Ejemplo: clasificar el rendimiento académico o explicar decisiones financieras de forma transparente.
+   Diseñada para casos como educación o finanzas, donde se requiere que los usuarios comprendan y confíen en las decisiones del modelo. Ejemplo: clasificar el rendimiento académico.
 
 2. **Proyectos de investigación en XAI**  
    IDS es una alternativa menos compleja y más eficiente que **Smooth Local Search (SLS)**, gracias a:
