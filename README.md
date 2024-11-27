@@ -57,10 +57,47 @@ from ids.utils import generate_candidate_rules, print_and_save_rules
 
 ### 2. Entrenamiento del Modelo IDS
 
+Para entrenar el modelo IDS, inicializa el modelo con los hiperparámetros adecuados según los objetivos de tu análisis. Puedes personalizar los siguientes hiperparámetros:
+
+- **`lambda1`**: Penalización para el número de reglas. Aumenta este valor para generar menos reglas.  
+  **Rango típico**: [0.01, 1.0].
+
+- **`lambda2`**: Penalización para la longitud de las reglas. Valores más altos favorecen reglas más cortas y simples.  
+  **Rango típico**: [0.01, 1.0].
+
+- **`lambda3`**: Penalización para errores de clasificación. Incrementa este valor para priorizar la precisión del modelo.  
+  **Rango típico**: [0.1, 10.0].
+
+- **`lambda4`**: Penalización para el solapamiento entre reglas. Aumenta este valor para reducir solapamientos y generar reglas más distintas entre sí.  
+  **Rango típico**: [0.1, 10.0].
+
+- **`min_support`**: Soporte mínimo requerido para generar reglas. Valores más altos consideran solo patrones más frecuentes en los datos.  
+  **Rango típico**: [0.01, 0.1].
+
+- **`min_confidence`**: Confianza mínima para aceptar reglas. Aumenta este valor para generar reglas más fiables.  
+  **Rango típico**: [0.5, 1.0].
+
+- **`max_rule_length`**: Longitud máxima permitida para las reglas (número de condiciones). Reduce este valor para reglas más simples y comprensibles.  
+  **Rango típico**: [1, 5].
+
+#### Ejemplo de Configuración de Hiperparámetros
+
 ```python
-# Inicializar y entrenar el modelo IDS
-ids_model = IDSModel(lambda1=0.1, lambda2=0.1, lambda3=1.0, lambda4=1.0, min_support=0.05, min_confidence=0.6, max_rule_length=3)
-ids_model.fit(X_train, y_train)
+from ids import IDSModel
+
+# Inicializar el modelo IDS con hiperparámetros personalizados
+model = IDSModel(
+    lambda1=0.1,       # Penalización para el número de reglas
+    lambda2=0.1,       # Penalización para la longitud de las reglas
+    lambda3=1.0,       # Penalización para errores de clasificación
+    lambda4=1.0,       # Penalización para solapamiento entre reglas
+    min_support=0.05,  # Soporte mínimo para las reglas
+    min_confidence=0.6, # Confianza mínima para aceptar reglas
+    max_rule_length=3   # Longitud máxima de las reglas
+)
+
+# Entrenar el modelo IDS con datos de entrenamiento
+model.fit(X_train, y_train)
 ```
 
 ### 3. Visualización de Reglas
