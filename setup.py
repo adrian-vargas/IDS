@@ -19,5 +19,5 @@ setup(
         'graphviz',
         'pillow',
     ],
-    python_requires='>=3.12.5',
+    python_requires='>=3.10.12',
 )
