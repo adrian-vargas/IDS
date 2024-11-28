@@ -466,6 +466,7 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
         for key, cell in table.get_celld().items():
             if cell.get_text().get_text() == predicted_class:
                 cell.set_facecolor('yellow')
+                
                 # Resaltar la celda a la izquierda (ID)
                 if key[1] == 1:  # Verificar que es la columna de "Definición"
                     table[(key[0], 0)].set_facecolor('yellow')  # Resaltar la celda de la columna "ID"
