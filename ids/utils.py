@@ -394,8 +394,7 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
         shape = "doublecircle" if idx - 1 in active_rules else "circle"
         dot.node(str(idx), f"{idx}", shape=shape, style="filled", fillcolor=color)
 
-    # Resaltar en amarillo la clase predicha si hay reglas activas
-    predicted_class = default_class  # Por defecto es la clase "Reprobado"
+    # Determinar la clase predicha (por defecto o según las reglas activas)
     if active_rules:
         # Calcular el número de votos por clase
         votes = [rules_df.loc[idx, prediction_col] for idx in active_rules]
@@ -405,9 +404,12 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
 
         # Elegir la clase predicha (incluso si hay empate)
         predicted_class = candidates[0]
+    else:
+        # Clase por defecto si no hay reglas activas
+        predicted_class = default_class
 
-        # Imprimir la clase predicha en la consola para depuración
-        print(f"Clase predicha según IDS: {predicted_class}")
+    # Imprimir la clase predicha en la consola para depuración
+    print(f"Clase predicha según IDS: {predicted_class}")
 
     # Nodos de predicción final ("Aprobado" y "Reprobado")
     for label, info in labels_map.items():
@@ -460,8 +462,9 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
 
     # Resaltar la clase predicha en la tabla si está habilitado
     if highlight_predicted_in_table:
-        for row_idx, (class_id, class_label) in enumerate(labels_map.items(), start=len(rules) + 1):
-            if class_label == predicted_class:
+        # Encontrar la fila correspondiente a la clase predicha y resaltarla
+        for row_idx, (class_id, label) in enumerate(labels_map.items(), start=len(rules) + 1):
+            if label == predicted_class:
                 table[(row_idx, 0)].set_facecolor('yellow')
                 table[(row_idx, 1)].set_facecolor('yellow')
 
