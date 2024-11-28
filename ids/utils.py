@@ -275,26 +275,16 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
         shape = "doublecircle" if idx - 1 in active_rules else "circle"
         dot.node(str(idx), f"{idx}", shape=shape, style="filled", fillcolor=color)
 
-    # Determinar la clase predicha según el sistema de votación del modelo
-    if active_rules:
-        # Calcular el número de votos por clase
-        votes = [rules_df.loc[idx, prediction_col] for idx in active_rules]
-        class_counts = {cls: votes.count(cls) for cls in set(votes)}
-        max_count = max(class_counts.values())
-        candidates = [cls for cls, count in class_counts.items() if count == max_count]
+    # Nodos de predicción final ("Aprobado" y "Reprobado")
+    for label, info in labels_map.items():
+        # Resaltar en amarillo la clase predicha (incluyendo la clase por defecto)
+        fillcolor = "yellow" if (not active_rules and label == default_class) else info['color']
+        dot.node(info['id'], info['id'], shape='box', style="filled", fillcolor=fillcolor)
 
-        # Elegir la clase predicha (incluso si hay empate)
-        predicted_class = candidates[0]
-
-        # Imprimir la clase predicha en la consola para depuración
-        print(f"Clase predicha según IDS: {predicted_class}")
-
-        # Resaltar en amarillo la clase predicha
-        dot.node(labels_map[predicted_class]['id'], labels_map[predicted_class]['id'], shape='box', style="filled", fillcolor="yellow")
-    else:
-        # No hay reglas activas, resaltar la clase por defecto en amarillo
-        print(f"No hay reglas activas. Clase por defecto: {default_class}")
-        dot.node(labels_map[default_class]['id'], labels_map[default_class]['id'], shape='box', style="filled", fillcolor="yellow")
+    # Conectar reglas con predicciones
+    for idx in active_rules:
+        predicted_class = predictions[idx]
+        dot.edge(str(idx + 1), labels_map[predicted_class]['id'])
 
     # Renderizar el gráfico en memoria
     dot.format = "png"
