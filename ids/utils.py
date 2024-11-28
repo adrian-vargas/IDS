@@ -463,7 +463,7 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
         table[(active_rule_idx + 1, 1)].set_facecolor('yellow')  # Resaltar Definición
 
     # Resaltar la clase predicha en la tabla si está habilitado
-    if highlight_predicted_in_table and active_rules:
+    if highlight_predicted_in_table:
         predicted_class_row = len(rules) + list(labels_map.keys()).index(predicted_class)
         table[(predicted_class_row, 0)].set_facecolor('yellow')
         table[(predicted_class_row, 1)].set_facecolor('yellow')
