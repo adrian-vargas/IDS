@@ -462,9 +462,9 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
 
     # Resaltar la clase predicha en la tabla si está habilitado
     if highlight_predicted_in_table:
-        # Encontrar la fila correspondiente a la clase predicha y resaltarla
-        for row_idx, (class_id, label) in enumerate(labels_map.items(), start=len(rules) + 1):
-            if label == predicted_class:
+        # Buscar la fila correspondiente a la clase predicha y resaltarla
+        for row_idx in range(len(rules), len(definitions)):
+            if definitions[row_idx][1] == predicted_class:
                 table[(row_idx, 0)].set_facecolor('yellow')
                 table[(row_idx, 1)].set_facecolor('yellow')
 
