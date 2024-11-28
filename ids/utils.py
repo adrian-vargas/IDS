@@ -302,7 +302,12 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
 
         # Resaltar en amarillo la clase predicha (independientemente de si hay empate o no)
         predicted_class = candidates[0]
+        
+        # Imprimir la clase predicha en la consola
+        print(f"Clase predicha: {predicted_class}")
+        
         dot.node(labels_map[predicted_class]['id'], labels_map[predicted_class]['id'], shape='box', style="filled", fillcolor="yellow")
+
 
 
 
