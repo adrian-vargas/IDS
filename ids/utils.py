@@ -462,12 +462,13 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
 
     # Resaltar la clase predicha en la tabla si está habilitado
     if highlight_predicted_in_table:
-        # Iterar sobre las filas correspondientes a las clases en la tabla para encontrar la clase predicha y resaltarla
-        for row_idx, (id_, label) in enumerate(definitions[len(rules):], start=len(rules)):
-            if label == predicted_class:
-                # Resaltar tanto el ID como la Definición de la clase predicha en amarillo
-                table[(row_idx, 0)].set_facecolor('yellow')
-                table[(row_idx, 1)].set_facecolor('yellow')
+        # Iterar sobre las celdas de la tabla para encontrar la clase predicha y resaltarla
+        for key, cell in table.get_celld().items():
+            if cell.get_text().get_text() == predicted_class:
+                cell.set_facecolor('yellow')
+                # Resaltar la celda a la izquierda (ID)
+                if key[1] == 1:  # Verificar que es la columna de "Definición"
+                    table[(key[0], 0)].set_facecolor('yellow')  # Resaltar la celda de la columna "ID"
 
     # Mostrar la imagen del grafo y la tabla
     axs[0].imshow(graph_img)
