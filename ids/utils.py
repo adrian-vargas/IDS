@@ -274,11 +274,22 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
         color = "yellow" if idx - 1 in active_rules else "lightblue"
         shape = "doublecircle" if idx - 1 in active_rules else "circle"
         dot.node(str(idx), f"{idx}", shape=shape, style="filled", fillcolor=color)
-
+    '''
     # Nodos de predicción final
     for label, info in labels_map.items():
         # Si no hay reglas activas y es la clase por defecto, resaltar en amarillo
         fillcolor = "yellow" if not active_rules and label == default_class else info['color']
+        dot.node(info['id'], info['id'], shape='box', style="filled", fillcolor=fillcolor)
+    '''
+    # Nodos de predicción final
+    for label, info in labels_map.items():
+        # Establecer color de relleno por defecto
+        fillcolor = info['color']
+        
+        # Si no hay reglas activas y es la clase por defecto, resaltar en amarillo
+        if not active_rules and label == default_class:
+            fillcolor = "yellow"
+        
         dot.node(info['id'], info['id'], shape='box', style="filled", fillcolor=fillcolor)
 
     # Agregar bloque para destacar en amarillo el nodo predicho (si hay reglas activas)
@@ -289,15 +300,10 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
         max_count = max(class_counts.values())
         candidates = [cls for cls, count in class_counts.items() if count == max_count]
 
-        # Si hay empate (más de una clase tiene el máximo número de votos)
-        if len(candidates) > 1:
-            # Resaltar todos los nodos correspondientes a las clases empatadas en color naranja
-            for cls in candidates:
-                dot.node(labels_map[cls]['id'], labels_map[cls]['id'], shape='box', style="filled", fillcolor="orange")
-        else:
-            # No hay empate, resaltar la clase predicha en amarillo
-            predicted_class = candidates[0]
-            dot.node(labels_map[predicted_class]['id'], labels_map[predicted_class]['id'], shape='box', style="filled", fillcolor="yellow")
+        # Resaltar en amarillo la clase predicha (independientemente de si hay empate o no)
+        predicted_class = candidates[0]
+        dot.node(labels_map[predicted_class]['id'], labels_map[predicted_class]['id'], shape='box', style="filled", fillcolor="yellow")
+
 
 
 
