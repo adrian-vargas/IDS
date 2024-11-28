@@ -376,6 +376,32 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
 
     # Crear el grafo
     dot = Digraph(comment='IDS - Local Explanation', graph_attr={'size': '10,10'})
+def explain_local_ids(model, rules_df, test_features, rule_col='rule', prediction_col='prediction', labels_map=None, default_class='Reprobado', highlight_predicted_in_table=False):
+    """
+    Genera una explicación local para una observación específica en el modelo IDS,
+    resaltando las reglas que cubren esta observación.
+
+    Parámetros:
+    - model: Modelo IDS entrenado.
+    - rules_df: DataFrame que contiene las reglas y sus predicciones.
+    - test_features: Diccionario con las características de la observación específica.
+    - rule_col: Nombre de la columna que contiene las reglas.
+    - prediction_col: Nombre de la columna que contiene las predicciones.
+    - labels_map: Mapeo opcional de etiquetas para usar colores específicos.
+    - default_class: Clase por defecto a resaltar si no se activa ninguna regla.
+    - highlight_predicted_in_table: Booleano para resaltar la clase predicha en la tabla de definiciones.
+    """
+    # Convertir las características de prueba a un DataFrame de una sola fila
+    specific_observation = pd.DataFrame([test_features])
+
+    # Identificar las reglas activas manualmente
+    active_rules = []
+    for idx, rule in enumerate(model.selected_rules):
+        if rule.covers(specific_observation.iloc[0]):
+            active_rules.append(idx)
+
+    # Crear el grafo
+    dot = Digraph(comment='IDS - Local Explanation', graph_attr={'size': '10,10'})
 
     # Extraer las reglas y predicciones del DataFrame
     rules = rules_df[rule_col].tolist()
@@ -462,14 +488,13 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
 
     # Resaltar la clase predicha en la tabla si está habilitado
     if highlight_predicted_in_table:
-        # Iterar sobre las filas para encontrar la clase predicha
-        for row_idx, (class_id, label) in enumerate(labels_map.items(), start=len(rules)):
-            if label == predicted_class:
-                # Resaltar tanto la ID como la Definición en amarillo
-                table[(row_idx, 0)].set_facecolor('yellow')
-                table[(row_idx, 1)].set_facecolor('yellow')
+        # Iterar sobre las celdas de la tabla para encontrar la clase predicha y resaltarla
+        for key, cell in table.get_celld().items():
+            if cell.get_text().get_text() == predicted_class:
+                cell.set_facecolor('yellow')
 
     # Mostrar la imagen del grafo y la tabla
     axs[0].imshow(graph_img)
     plt.tight_layout()
     plt.show()
+
