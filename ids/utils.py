@@ -281,6 +281,37 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
         fillcolor = "yellow" if not active_rules and label == default_class else info['color']
         dot.node(info['id'], info['id'], shape='box', style="filled", fillcolor=fillcolor)
 
+    # Agregar bloque para destacar en amarillo el nodo predicho (si hay reglas activas)
+    if active_rules:
+        # Calcular el número de votos por clase
+        votes = [rules_df.loc[idx, prediction_col] for idx in active_rules]
+        class_counts = {cls: votes.count(cls) for cls in set(votes)}
+        max_count = max(class_counts.values())
+        candidates = [cls for cls, count in class_counts.items() if count == max_count]
+
+        # Si hay empate (más de una clase tiene el máximo número de votos)
+        if len(candidates) > 1:
+            # Resaltar todos los nodos correspondientes a las clases empatadas en color naranja
+            for cls in candidates:
+                dot.node(labels_map[cls]['id'], labels_map[cls]['id'], shape='box', style="filled", fillcolor="orange")
+        else:
+            # No hay empate, resaltar la clase predicha en amarillo
+            predicted_class = candidates[0]
+            dot.node(labels_map[predicted_class]['id'], labels_map[predicted_class]['id'], shape='box', style="filled", fillcolor="yellow")
+
+
+
+
+
+
+
+    # Agregar bloque para destacar en amarillo el nodo predicho (si hay reglas activas)
+    if active_rules:
+        # La predicción se determina con la clase de la última regla activa
+        predicted_class = rules_df.loc[active_rules[-1], prediction_col]
+        # Resaltar el nodo de la clase predicha en amarillo
+        dot.node(labels_map[predicted_class]['id'], labels_map[predicted_class]['id'], shape='box', style="filled", fillcolor="yellow")
+
     # Conectar nodos según las reglas
     for idx, prediction in enumerate(predictions, start=1):
         dot.edge(str(idx), labels_map[prediction]['id'])
