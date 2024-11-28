@@ -394,22 +394,8 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
         shape = "doublecircle" if idx - 1 in active_rules else "circle"
         dot.node(str(idx), f"{idx}", shape=shape, style="filled", fillcolor=color)
 
-    # Nodos de predicción final ("Aprobado" y "Reprobado")
-    for label, info in labels_map.items():
-        # Resaltar en amarillo la clase predicha (incluyendo la clase por defecto)
-        fillcolor = "yellow" if (not active_rules and label == default_class) else info['color']
-        dot.node(info['id'], info['id'], shape='box', style="filled", fillcolor=fillcolor)
-
-    # Conectar todas las reglas con su predicción correspondiente
-    for idx in range(len(rules)):
-        predicted_class = predictions[idx]
-        # Si es la clase predicha, resaltar el nodo de la clase en amarillo
-        if idx in active_rules:
-            dot.edge(str(idx + 1), labels_map[predicted_class]['id'])
-        else:
-            dot.edge(str(idx + 1), labels_map[predicted_class]['id'], style="dashed")  # Conectar reglas no aplicadas con estilo distinto
-
-    # Resaltar en amarillo la clase predicha si hay reglas activas y hay una predicción final
+    # Resaltar en amarillo la clase predicha si hay reglas activas
+    predicted_class = default_class  # Por defecto es la clase "Reprobado"
     if active_rules:
         # Calcular el número de votos por clase
         votes = [rules_df.loc[idx, prediction_col] for idx in active_rules]
@@ -423,8 +409,18 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
         # Imprimir la clase predicha en la consola para depuración
         print(f"Clase predicha según IDS: {predicted_class}")
 
-        # Cambiar el color del nodo de la clase predicha a amarillo
-        dot.node(labels_map[predicted_class]['id'], labels_map[predicted_class]['id'], shape='box', style="filled", fillcolor="yellow")
+    # Nodos de predicción final ("Aprobado" y "Reprobado")
+    for label, info in labels_map.items():
+        fillcolor = "yellow" if label == predicted_class else info['color']
+        dot.node(info['id'], info['id'], shape='box', style="filled", fillcolor=fillcolor)
+
+    # Conectar todas las reglas con su predicción correspondiente
+    for idx in range(len(rules)):
+        predicted_class_for_rule = predictions[idx]
+        if idx in active_rules:
+            dot.edge(str(idx + 1), labels_map[predicted_class_for_rule]['id'])
+        else:
+            dot.edge(str(idx + 1), labels_map[predicted_class_for_rule]['id'], style="dashed")  # Conectar reglas no aplicadas con estilo distinto
 
     # Renderizar el gráfico en memoria
     dot.format = "png"
@@ -464,9 +460,10 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
 
     # Resaltar la clase predicha en la tabla si está habilitado
     if highlight_predicted_in_table:
-        predicted_class_row = len(rules) + list(labels_map.keys()).index(predicted_class)
-        table[(predicted_class_row, 0)].set_facecolor('yellow')
-        table[(predicted_class_row, 1)].set_facecolor('yellow')
+        for row_idx, (class_id, class_label) in enumerate(labels_map.items(), start=len(rules) + 1):
+            if class_label == predicted_class:
+                table[(row_idx, 0)].set_facecolor('yellow')
+                table[(row_idx, 1)].set_facecolor('yellow')
 
     # Mostrar la imagen del grafo y la tabla
     axs[0].imshow(graph_img)
