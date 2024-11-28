@@ -231,7 +231,7 @@ def generate_ids_global_graph(ids_model):
 
     # Renderizar y mostrar el grafo en consola
     display(Image(dot.pipe(format='png')))
-
+'''
 def explain_local_ids(model, rules_df, test_features, rule_col='rule', prediction_col='prediction', labels_map=None, default_class='Reprobado'):
     """
     Genera una explicación local para una observación específica en el modelo IDS,
@@ -348,7 +348,9 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
     plt.tight_layout()
     plt.show()
 
-def explain_local_ids(model, rules_df, test_features, rule_col='rule', prediction_col='prediction', labels_map=None, default_class='Reprobado', highlight_predicted_in_table=True):
+'''
+
+def explain_local_ids(model, rules_df, test_features, rule_col='rule', prediction_col='prediction', labels_map=None, default_class='Reprobado', highlight_predicted_in_table=False):
     """
     Genera una explicación local para una observación específica en el modelo IDS,
     resaltando las reglas que cubren esta observación.
