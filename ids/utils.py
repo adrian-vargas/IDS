@@ -466,10 +466,15 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
         for key, cell in table.get_celld().items():
             # Resaltar tanto la ID como la Definición si coincide con la clase predicha
             if cell.get_text().get_text() == predicted_class:
+                # Resaltar el valor de la celda de clase predicha (ID o Definición)
                 cell.set_facecolor('yellow')
-                # Resaltar el ID correspondiente a la clase predicha
-                if key[1] == 0:  # Columna de ID
-                    cell.set_facecolor('yellow')
+
+            # Resaltar la fila completa que contiene la clase predicha
+            if len(key) == 2 and key[1] == 0:  # Columna de ID
+                class_label = definitions[key[0] - 1][1] if key[0] > len(rules) else None
+                if class_label == predicted_class:
+                    table[(key[0], 0)].set_facecolor('yellow')
+                    table[(key[0], 1)].set_facecolor('yellow')
 
     # Mostrar la imagen del grafo y la tabla
     axs[0].imshow(graph_img)
