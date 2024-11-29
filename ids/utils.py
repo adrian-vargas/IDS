@@ -374,6 +374,7 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
     - default_class: Clase por defecto a resaltar si no se activa ninguna regla.
     - highlight_predicted_in_table: Booleano para resaltar la clase predicha en la tabla de definiciones.
     """
+    '''
     # Convertir las características de prueba a un DataFrame de una sola fila
     specific_observation = pd.DataFrame([test_features])
 
@@ -385,6 +386,25 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
 
     # Mostrar cuáles reglas fueron activas
     print(f"Reglas activas: {active_rules}")
+    '''
+    # Mostrar características de la observación
+    print(f"Observación específica: {specific_observation.iloc[0]}")
+
+    # Mostrar reglas seleccionadas
+    print("Reglas seleccionadas por el modelo:")
+    for idx, rule in enumerate(model.selected_rules):
+        print(f"Regla {idx + 1}: {rule}")
+
+    # Identificar las reglas activas manualmente
+    active_rules = []
+    for idx, rule in enumerate(model.selected_rules):
+        if rule.covers(specific_observation.iloc[0]):
+            active_rules.append(idx)
+
+    # Mostrar cuáles reglas fueron activas
+    print(f"Reglas activas (índices desde 0): {active_rules}")
+    print(f"Reglas activas (números desde 1): {[idx + 1 for idx in active_rules]}")
+
 
     # Crear el grafo
     dot = Digraph(comment='IDS - Local Explanation', graph_attr={'size': '10,10'})
