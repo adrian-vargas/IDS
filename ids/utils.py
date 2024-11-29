@@ -564,8 +564,9 @@ def explain_global_ids(model, rules_df, labels_map=None, highlight_predicted_in_
         # Resaltar la clase predicha en la tabla
         for key, cell in table.get_celld().items():
             if cell.get_text().get_text() == predicted_class and key[0] > len(rules):
+                # Resaltar el valor de la celda de clase predicha (solo columna de "Definición")
                 cell.set_facecolor('yellow')
-                # Resaltar la celda a la izquierda (ID)
+                # Resaltar la celda a la izquierda (ID) si corresponde a una clase predicha
                 if key[1] == 1:  # Verificar que es la columna de "Definición"
                     table[(key[0], 0)].set_facecolor('yellow')  # Resaltar la celda de la columna "ID"
 
@@ -573,3 +574,4 @@ def explain_global_ids(model, rules_df, labels_map=None, highlight_predicted_in_
     axs[0].imshow(graph_img)
     plt.tight_layout()
     plt.show()
+
