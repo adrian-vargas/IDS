@@ -563,7 +563,7 @@ def explain_global_ids(model, rules_df, labels_map=None, highlight_predicted_in_
 
         # Resaltar la clase predicha en la tabla
         for key, cell in table.get_celld().items():
-            if cell.get_text().get_text() == predicted_class:
+            if cell.get_text().get_text() == predicted_class and key[0] > len(rules):
                 cell.set_facecolor('yellow')
 
     # Mostrar la imagen del grafo y la tabla
