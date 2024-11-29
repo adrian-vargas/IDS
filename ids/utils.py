@@ -358,7 +358,7 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
     plt.tight_layout()
     plt.show()
 '''
-
+'''
 def explain_local_ids(model, rules_df, test_features, rule_col='rule', prediction_col='prediction', labels_map=None, default_class='Reprobado', highlight_predicted_in_table=False):
     """
     Genera una explicación local para una observación específica en el modelo IDS,
@@ -377,7 +377,7 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
     
     # Convertir las características de prueba a un DataFrame de una sola fila
     specific_observation = pd.DataFrame([test_features])
-    '''
+    
     # Identificar las reglas activas manualmente
     active_rules = []
     for idx, rule in enumerate(model.selected_rules):
@@ -386,7 +386,7 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
 
     # Mostrar cuáles reglas fueron activas
     print(f"Reglas activas: {active_rules}")
-    '''
+    
     # Mostrar características de la observación
     print(f"Observación específica:\n{specific_observation.iloc[0]}")
 
@@ -510,6 +510,136 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
     axs[0].imshow(graph_img)
     plt.tight_layout()
     plt.show()
+'''
+
+def explain_local_ids(model, rules_df, test_features, rule_col='rule', prediction_col='prediction', labels_map=None, default_class='Reprobado', highlight_predicted_in_table=False):
+    """
+    Genera una explicación local para una observación específica en el modelo IDS,
+    resaltando las reglas que cubren esta observación.
+
+    Parámetros:
+    - model: Modelo IDS entrenado.
+    - rules_df: DataFrame que contiene las reglas y sus predicciones.
+    - test_features: Diccionario con las características de la observación específica.
+    - rule_col: Nombre de la columna que contiene las reglas.
+    - prediction_col: Nombre de la columna que contiene las predicciones.
+    - labels_map: Mapeo opcional de etiquetas para usar colores específicos.
+    - default_class: Clase por defecto a resaltar si no se activa ninguna regla.
+    - highlight_predicted_in_table: Booleano para resaltar la clase predicha en la tabla de definiciones.
+    """
+    
+    # Convertir las características de prueba a un DataFrame de una sola fila
+    specific_observation = pd.DataFrame([test_features])
+
+    # Obtener la clase predicha para la observación específica usando el modelo IDS
+    predicted_class = model.predict(specific_observation)[0]
+
+    # Mostrar la observación específica
+    print(f"Observación específica:\n{specific_observation.iloc[0]}")
+
+    # Mostrar las reglas seleccionadas por el modelo
+    print("Reglas seleccionadas por el modelo:")
+    for idx, rule in enumerate(model.selected_rules):
+        print(f"Regla {idx + 1}: {rule}")
+
+    # Identificar las reglas activas manualmente
+    active_rules = []
+    for idx, rule in enumerate(model.selected_rules):
+        if rule.covers(specific_observation.iloc[0]):
+            active_rules.append(idx)
+
+    # Mostrar cuáles reglas fueron activas
+    print(f"Reglas activas: {[idx + 1 for idx in active_rules]}")
+
+    # Crear el grafo
+    dot = Digraph(comment='IDS - Local Explanation', graph_attr={'size': '10,10'})
+
+    # Extraer las reglas y predicciones del DataFrame
+    rules = rules_df[rule_col].tolist()
+    predictions = rules_df[prediction_col].tolist()
+
+    # Mapeo de etiquetas si no se ha proporcionado
+    if labels_map is None:
+        labels_map = {
+            'Aprobado': {'id': 'A', 'color': 'lightgreen'},
+            'Reprobado': {'id': 'B', 'color': 'lightcoral'}
+        }
+
+    # Agregar nodos de reglas con doble círculo si están activas
+    for idx, rule in enumerate(rules, start=1):
+        color = "yellow" if idx - 1 in active_rules else "lightblue"
+        shape = "doublecircle" if idx - 1 in active_rules else "circle"
+        dot.node(str(idx), f"{idx}", shape=shape, style="filled", fillcolor=color)
+
+    # Imprimir la clase predicha en la consola para depuración
+    print(f"Clase predicha según IDS: {predicted_class}")
+
+    # Nodos de predicción final ("Aprobado" y "Reprobado")
+    for label, info in labels_map.items():
+        fillcolor = "yellow" if label == predicted_class else info['color']
+        dot.node(info['id'], info['id'], shape='box', style="filled", fillcolor=fillcolor)
+
+    # Conectar todas las reglas con su predicción correspondiente
+    for idx in range(len(rules)):
+        predicted_class_for_rule = predictions[idx]
+        if idx in active_rules:
+            dot.edge(str(idx + 1), labels_map[predicted_class_for_rule]['id'])
+        else:
+            dot.edge(str(idx + 1), labels_map[predicted_class_for_rule]['id'], style="dashed")  # Conectar reglas no aplicadas con estilo distinto
+
+    # Renderizar el gráfico en memoria
+    dot.format = "png"
+    dot_data = dot.pipe()
+
+    # Mostrar el grafo utilizando matplotlib
+    fig, axs = plt.subplots(1, 2, figsize=(15, 7))
+    axs[0].axis("off")
+    axs[1].axis("off")
+
+    # Leer la imagen directamente desde la memoria
+    graph_img = Image.open(BytesIO(dot_data))
+
+    # Crear la tabla de referencia de variables con la clase literal en la definición
+    definitions = [
+        [
+            f"{idx+1}",
+            f"{rule.split('entonces')[0].strip()} entonces {prediction}"
+        ]
+        for idx, (rule, prediction) in enumerate(zip(rules, predictions))
+    ]
+
+    # Agregar las etiquetas de clase "A" para Aprobado y "B" para Reprobado en la tabla de referencia
+    definitions += [[info['id'], label] for label, info in labels_map.items()]
+
+    table_ax = axs[1]
+    table_ax.axis("off")
+    table = table_ax.table(cellText=definitions, colLabels=["ID", "Definición"], loc="center", cellLoc="left", colWidths=[0.15, 0.7])
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.auto_set_column_width([0, 1])
+
+    # Resaltar las filas correspondientes a las reglas activas
+    for active_rule_idx in active_rules:
+        table[(active_rule_idx + 1, 0)].set_facecolor('yellow')  # Resaltar ID
+        table[(active_rule_idx + 1, 1)].set_facecolor('yellow')  # Resaltar Definición
+
+    # Resaltar la clase predicha en la tabla si está habilitado
+    if highlight_predicted_in_table:
+        # Iterar sobre las celdas de la tabla para encontrar la clase predicha y resaltarla
+        for key, cell in table.get_celld().items():
+            if cell.get_text().get_text() == predicted_class and key[0] > len(rules):
+                cell.set_facecolor('yellow')
+
+                # Resaltar la celda a la izquierda (ID)
+                if key[1] == 1:  # Verificar que es la columna de "Definición"
+                    table[(key[0], 0)].set_facecolor('yellow')  # Resaltar la celda de la columna "ID"
+
+    # Mostrar la imagen del grafo y la tabla
+    axs[0].imshow(graph_img)
+    plt.tight_layout()
+    plt.show()
+
+
 
 def explain_global_ids(model, rules_df, test_features=None, labels_map=None, highlight_predicted_in_table=False):
     """
