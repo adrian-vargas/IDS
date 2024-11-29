@@ -417,7 +417,9 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
         color = "yellow" if idx - 1 in active_rules else "lightblue"
         shape = "doublecircle" if idx - 1 in active_rules else "circle"
         dot.node(str(idx), f"{idx}", shape=shape, style="filled", fillcolor=color)
-    '''
+    
+
+    
     # Determinar la clase predicha (por defecto o según las reglas activas)
     if active_rules:
         # Calcular el número de votos por clase
@@ -431,7 +433,11 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
     else:
         # Clase por defecto si no hay reglas activas
         predicted_class = default_class
-    '''
+    
+
+
+
+
     # Imprimir la clase predicha en la consola para depuración
     print(f"Clase predicha según IDS: {predicted_class}")
 
