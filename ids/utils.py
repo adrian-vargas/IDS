@@ -479,8 +479,7 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
 
 def explain_global_ids(model, rules_df, labels_map=None, highlight_predicted_in_table=False):
     """
-    Genera una explicación global para el modelo IDS, resaltando opcionalmente las reglas aplicadas
-    y la clase predicha sin alterar el grafo original.
+    Genera una explicación global para el modelo IDS resaltando las reglas y clases predichas.
 
     Parámetros:
     - model: Modelo IDS entrenado.
@@ -488,74 +487,63 @@ def explain_global_ids(model, rules_df, labels_map=None, highlight_predicted_in_
     - labels_map: Mapeo opcional de etiquetas para usar colores específicos.
     - highlight_predicted_in_table: Booleano para resaltar la clase predicha en la tabla de definiciones.
     """
-    # Crear un nuevo grafo dirigido con Graphviz
-    dot = Digraph(comment='Interpretable Decision Sets (IDS) - Global Explanation', graph_attr={'size': '10,10'})
-
-    # Extraer las reglas y predicciones del DataFrame
-    rules = rules_df['rule'].tolist()
-    predictions = rules_df['prediction'].tolist()
-
-    # Mapeo de etiquetas si no se ha proporcionado
+    # Mapeo de etiquetas por defecto
     if labels_map is None:
         labels_map = {
             'Aprobado': {'id': 'A', 'color': 'lightgreen'},
             'Reprobado': {'id': 'B', 'color': 'lightcoral'}
         }
 
-    # Agregar nodos de reglas con color azul inicialmente
-    for idx, rule in enumerate(rules, start=1):
-        dot.node(str(idx), str(idx), shape='circle', style='filled', fillcolor='lightblue')
+    # Crear un nuevo grafo dirigido
+    dot = Digraph(comment='Interpretable Decision Sets (IDS)', graph_attr={'size': '10,10'})
 
-    # Nodos de predicción final ("Aprobado" y "Reprobado")
+    # Extraer las reglas y predicciones del DataFrame
+    rules = rules_df['rule'].tolist()
+    predictions = rules_df['prediction'].tolist()
+
+    # Agregar nodos de reglas al grafo
+    for idx, rule in enumerate(rules, start=1):
+        dot.node(str(idx), str(idx), style='filled', fillcolor='lightblue')
+
+    # Nodos de predicciones con colores específicos
     for label, info in labels_map.items():
         dot.node(info['id'], info['id'], shape='box', style='filled', fillcolor=info['color'])
 
-    # Conectar nodos de reglas con predicciones
+    # Conectar cada regla con su predicción correspondiente
     for idx, prediction in enumerate(predictions, start=1):
         dot.edge(str(idx), labels_map[prediction]['id'])
 
     # Renderizar el gráfico en memoria
-    dot.format = "png"
+    dot.format = 'png'
     dot_data = dot.pipe()
 
     # Mostrar el grafo utilizando matplotlib
-    fig, axs = plt.subplots(1, 2, figsize=(15, 7))
-    axs[0].axis("off")
-    axs[1].axis("off")
+    fig, axs = plt.subplots(1, 2, figsize=(20, 10))
+    axs[0].axis('off')
+    axs[1].axis('off')
 
     # Leer la imagen directamente desde la memoria
     graph_img = Image.open(BytesIO(dot_data))
 
-    # Crear la tabla de referencia de variables con la clase literal en la definición
+    # Crear la tabla de referencia de variables con las clases literales en la definición
     definitions = [
         [
-            f"{idx+1}",
+            str(idx + 1),
             f"{rule.split('entonces')[0].strip()} entonces {prediction}"
         ]
         for idx, (rule, prediction) in enumerate(zip(rules, predictions))
     ]
 
-    # Agregar las etiquetas de clase "A" para Aprobado y "B" para Reprobado en la tabla de referencia
+    # Añadir las clases "A" y "B" con su significado
     definitions += [[info['id'], label] for label, info in labels_map.items()]
 
+    # Crear la tabla de referencia de variables
     table_ax = axs[1]
-    table_ax.axis("off")
-    table = table_ax.table(cellText=definitions, colLabels=["ID", "Definición"], loc="center", cellLoc="left", colWidths=[0.15, 0.7])
+    table_ax.axis('off')
+    table = table_ax.table(cellText=definitions, colLabels=['ID', 'Definición'], loc='center', cellLoc='left', colWidths=[0.1, 0.7])
     table.auto_set_font_size(False)
     table.set_fontsize(10)
     table.auto_set_column_width([0, 1])
-
-    # Resaltar la clase predicha en la tabla si está habilitado
-    if highlight_predicted_in_table:
-        # Iterar sobre las celdas de la tabla para encontrar la clase predicha y resaltarla
-        for key, cell in table.get_celld().items():
-            if cell.get_text().get_text() in labels_map:
-                predicted_class = cell.get_text().get_text()
-                cell.set_facecolor('yellow')
-
-                # Resaltar la celda a la izquierda (ID)
-                if key[1] == 1:  # Verificar que es la columna de "Definición"
-                    table[(key[0], 0)].set_facecolor('yellow')  # Resaltar la celda de la columna "ID"
 
     # Mostrar la imagen del grafo y la tabla
     axs[0].imshow(graph_img)
