@@ -553,11 +553,18 @@ def explain_global_ids(model, rules_df, labels_map=None, highlight_predicted_in_
             table[(active_rule_idx + 1, 1)].set_facecolor('yellow')  # Resaltar Definición
 
     # Resaltar la clase predicha en la tabla si está habilitado
-    if highlight_predicted_in_table:
+    if highlight_predicted_in_table and active_rules:
+        # Calcular la clase predicha según las reglas activas
+        votes = [predictions[idx] for idx in active_rules]
+        class_counts = {cls: votes.count(cls) for cls in set(votes)}
+        max_count = max(class_counts.values())
+        candidates = [cls for cls, count in class_counts.items() if count == max_count]
+        predicted_class = candidates[0]
+
+        # Resaltar la clase predicha en la tabla
         for key, cell in table.get_celld().items():
-            if cell.get_text().get_text() in labels_map.keys():
-                if cell.get_text().get_text() == model.predicted_class:  # Ajusta esto si es necesario
-                    cell.set_facecolor('yellow')
+            if cell.get_text().get_text() == predicted_class:
+                cell.set_facecolor('yellow')
 
     # Mostrar la imagen del grafo y la tabla
     axs[0].imshow(graph_img)
