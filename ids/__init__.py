@@ -13,5 +13,6 @@ from .utils import (
     print_and_save_rules,
     visualize_ids_rules,
     generate_ids_global_graph,
-    explain_local_ids
+    explain_local_ids,
+    explain_global_ids
 )
