@@ -565,6 +565,9 @@ def explain_global_ids(model, rules_df, labels_map=None, highlight_predicted_in_
         for key, cell in table.get_celld().items():
             if cell.get_text().get_text() == predicted_class and key[0] > len(rules):
                 cell.set_facecolor('yellow')
+                # Resaltar la celda a la izquierda (ID)
+                if key[1] == 1:  # Verificar que es la columna de "Definición"
+                    table[(key[0], 0)].set_facecolor('yellow')  # Resaltar la celda de la columna "ID"
 
     # Mostrar la imagen del grafo y la tabla
     axs[0].imshow(graph_img)
