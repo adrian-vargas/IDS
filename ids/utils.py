@@ -388,7 +388,7 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
     print(f"Reglas activas: {active_rules}")
     '''
     # Mostrar características de la observación
-    print(f"Observación específica: {specific_observation.iloc[0]}\n")
+    print(f"Observación específica:\n{specific_observation.iloc[0]}")
 
     # Mostrar reglas seleccionadas
     print("Reglas seleccionadas por el modelo:")
