@@ -402,8 +402,11 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
             active_rules.append(idx)
 
     # Mostrar cuáles reglas fueron activas
-    print(f"Reglas activas (índices desde 0): {active_rules}")
+    # print(f"Reglas activas (índices desde 0): {active_rules}")
     print(f"Reglas activas (números desde 1): {[idx + 1 for idx in active_rules]}")
+
+
+
 
 
     # Crear el grafo
