@@ -384,7 +384,7 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
             active_rules.append(idx)
 
     # Mostrar cuáles reglas fueron activas
-    print(f"Reglas activas: {[idx + 1 for idx in active_rules]}")
+    print(f"Reglas activas: {active_rules}")
 
     # Crear el grafo
     dot = Digraph(comment='IDS - Local Explanation', graph_attr={'size': '10,10'})
