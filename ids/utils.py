@@ -477,16 +477,16 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
     plt.show()
 
 
-def explain_global_ids(model, rules_df, labels_map=None, highlight_predicted_in_table=False, active_rules=None):
+def explain_global_ids(model, rules_df, test_features=None, labels_map=None, highlight_predicted_in_table=False):
     """
     Genera una explicación global para el modelo IDS, opcionalmente resaltando reglas activas y la clase predicha solo en la tabla.
 
     Parámetros:
     - model: Modelo IDS entrenado.
     - rules_df: DataFrame que contiene las reglas y sus predicciones.
+    - test_features: Diccionario con las características de la observación específica (opcional para resaltar reglas activas).
     - labels_map: Mapeo opcional de etiquetas para usar colores específicos.
     - highlight_predicted_in_table: Booleano para resaltar la clase predicha en la tabla de definiciones.
-    - active_rules: Lista de índices de reglas activas (opcional).
     """
     # Crear el grafo
     dot = Digraph(comment='IDS - Global Explanation', graph_attr={'size': '10,10'})
@@ -501,6 +501,12 @@ def explain_global_ids(model, rules_df, labels_map=None, highlight_predicted_in_
             'Aprobado': {'id': 'A', 'color': 'lightgreen'},
             'Reprobado': {'id': 'B', 'color': 'lightcoral'}
         }
+
+    # Si se proporcionan características de prueba, identificar las reglas activas
+    active_rules = []
+    if test_features is not None:
+        specific_observation = pd.DataFrame([test_features])
+        active_rules = [idx for idx, rule in enumerate(model.selected_rules) if rule.covers(specific_observation.iloc[0])]
 
     # Agregar nodos de reglas
     for idx, rule in enumerate(rules, start=1):
@@ -564,9 +570,8 @@ def explain_global_ids(model, rules_df, labels_map=None, highlight_predicted_in_
         # Resaltar la clase predicha en la tabla
         for key, cell in table.get_celld().items():
             if cell.get_text().get_text() == predicted_class and key[0] > len(rules):
-                # Resaltar el valor de la celda de clase predicha (solo columna de "Definición")
                 cell.set_facecolor('yellow')
-                # Resaltar la celda a la izquierda (ID) si corresponde a una clase predicha
+                # Resaltar la celda a la izquierda (ID)
                 if key[1] == 1:  # Verificar que es la columna de "Definición"
                     table[(key[0], 0)].set_facecolor('yellow')  # Resaltar la celda de la columna "ID"
 
@@ -574,4 +579,3 @@ def explain_global_ids(model, rules_df, labels_map=None, highlight_predicted_in_
     axs[0].imshow(graph_img)
     plt.tight_layout()
     plt.show()
-
