@@ -374,10 +374,10 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
     - default_class: Clase por defecto a resaltar si no se activa ninguna regla.
     - highlight_predicted_in_table: Booleano para resaltar la clase predicha en la tabla de definiciones.
     """
-    '''
+    
     # Convertir las características de prueba a un DataFrame de una sola fila
     specific_observation = pd.DataFrame([test_features])
-
+    '''
     # Identificar las reglas activas manualmente
     active_rules = []
     for idx, rule in enumerate(model.selected_rules):
