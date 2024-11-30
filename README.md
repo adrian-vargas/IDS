@@ -1,7 +1,7 @@
 
 # IDS - Interpretable Decision Sets
 
-IDS es una librería en Python diseñada para entrenar modelos de Interpretable Decision Sets (IDS), un marco de modelos de inteligencia artificial transparente que genera conjuntos de reglas fácilmente interpretables. Estos modelos son ideales para aplicaciones donde la transparencia y la interpretabilidad.
+IDS es una librería en Python diseñada para entrenar modelos de Interpretable Decision Sets (IDS), un marco de modelos de inteligencia artificial transparente que genera conjuntos de reglas fácilmente interpretables. Estos modelos son ideales para aplicaciones donde la transparencia y la interpretabilidad son críticas.
 
 Este proyecto es parte del Trabajo de Fin de Máster (TFM) *A Tool for Human Evaluation of Interpretability* realizado por Adrián Vargas en la Universidad Politécnica de Madrid. La librería IDS implementa y extiende ideas clave del estudio de [Lakkaraju et al. (2016)](https://cs.stanford.edu/people/jure/pubs/interpretable-kdd16.pdf) y el repositorio original [pyIDS](https://github.com/jirifilip/pyIDS), optimizando tanto la precisión como la interpretabilidad.
 
@@ -12,6 +12,16 @@ Este proyecto es parte del Trabajo de Fin de Máster (TFM) *A Tool for Human Eva
 - **Análisis de interpretabilidad**: Calcula métricas como sparsity, coverage, gini y parsimony.
 - **Visualización avanzada**: Incluye gráficos globales y explicaciones locales mediante Graphviz y Matplotlib.
 - **Balanceo de datos**: Compatibilidad con SMOTE para mejorar la distribución de clases.
+
+## Visualización de Reglas
+
+La librería IDS permite generar explicaciones visuales de las reglas globales y locales. A continuación, se muestran ejemplos de ambas:
+
+### Grafo Global
+![Grafo Global](img/ambiguedad.png)
+
+### Grafo Local
+![Grafo Local](img/ambiguedad%20copy.png)
 
 ## Estructura del Proyecto
 
@@ -26,6 +36,9 @@ IDS/
 │   ├── ids.py                 # Implementación del modelo IDS
 │   ├── metrics.py             # Cálculo de métricas de interpretabilidad
 │   └── utils.py               # Funciones auxiliares para generación y visualización de reglas
+├── img/                       # Carpeta de imágenes de grafos
+│   ├── ambiguedad.png         # Ejemplo de grafo global
+│   └── ambiguedad copy.png    # Ejemplo de grafo local
 ├── venv/                      # Entorno virtual (opcional)
 ├── .gitignore
 ├── LICENSE
@@ -110,15 +123,6 @@ rules_df = print_and_save_rules(ids_model, X_train, y_train, output_file="ids_ru
 from ids.utils import visualize_ids_rules
 visualize_ids_rules(rules_df)
 ```
-
-## Funcionalidades Clave
-
-- **`IDSModel`**: Entrenamiento y predicción con reglas interpretables.
-- **Métricas de Interpretabilidad**:
-  - `calculate_ids_interpretability_metrics`: Analiza precisión, sparsity, parsimony y cobertura.
-  - `calculate_correct_incorrect_cover`: Evalúa qué tan bien cubren las reglas los datos.
-- **Visualización**:
-  - `visualize_ids_rules`: Genera diagramas globales y locales para las reglas seleccionadas.
 
 ## Contribuciones
 
