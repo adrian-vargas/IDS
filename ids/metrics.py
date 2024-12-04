@@ -174,17 +174,19 @@ def calculate_rule_properties(model, X_train, model_type="tree"):
             'overlap': overlap
         }
     
-def calculate_ids_probabilities(ids_model, X_test, y_test):
+def calculate_ids_probabilities(ids_model, X_test, y_test, target_class):
     """
-    Calcula las probabilidades de predicción para un conjunto de pruebas basado en el modelo IDS.
+    Calcula las probabilidades de predicción para un conjunto de pruebas basado en el modelo IDS,
+    enfocándose en la clase objetivo especificada.
 
     Args:
         ids_model (IDSModel): Modelo IDS entrenado.
         X_test (DataFrame): Conjunto de datos de prueba.
         y_test (Series): Etiquetas verdaderas para calcular la precisión de las reglas.
+        target_class (int): Clase objetivo para la cual calcular las probabilidades.
 
     Returns:
-        prob_ids (list): Lista de probabilidades estimadas basadas en la precisión de las reglas IDS.
+        prob_ids (list): Lista de probabilidades estimadas para la clase objetivo.
     """
     prob_ids = []
 
@@ -192,6 +194,7 @@ def calculate_ids_probabilities(ids_model, X_test, y_test):
     y_test = y_test.reset_index(drop=True)
 
     for i, row in X_test.iterrows():
+        # Obtener reglas aplicables a la fila actual
         applicable_rules = [rule for rule in ids_model.selected_rules if rule.covers(row)]
 
         if applicable_rules:
@@ -202,13 +205,16 @@ def calculate_ids_probabilities(ids_model, X_test, y_test):
                     if all(idx < len(y_test) for idx in covered_samples):
                         correct_samples = sum([1 for idx in covered_samples if y_test.iloc[idx] == rule.class_label])
                         precision = correct_samples / len(covered_samples)
-                        rule_precisions.append(precision)
+
+                        # Considerar solo reglas que predicen la clase objetivo
+                        if rule.class_label == target_class:
+                            rule_precisions.append(precision)
 
             if rule_precisions:
                 prob_ids.append(max(rule_precisions))
             else:
-                prob_ids.append(0.5)  # Si no hay precisión calculada, asignar probabilidad neutra
+                prob_ids.append(0.0)  # Si no hay precisión calculada para la clase objetivo, asignar 0
         else:
-            prob_ids.append(0.5)
+            prob_ids.append(0.0)  # Si no hay reglas aplicables, asignar 0 para la clase objetivo
 
     return prob_ids
