@@ -68,6 +68,7 @@ class IDSModel(BaseEstimator):
                 pred = max(set(votes), key=votes.count)
                 predictions.append(pred)
             else:
+                print("Clase por defecto usada (0 - Reprobado)")
                 predictions.append(0)  # Clase por defecto si ninguna regla coincide
         return np.array(predictions)
 
