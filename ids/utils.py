@@ -261,6 +261,18 @@ def explain_local_ids(model, rules_df, test_features, rule_col='rule', predictio
         if rule.covers(specific_observation.iloc[0]):
             active_rules.append(idx)
 
+    # Depuración: Mostrar si no hay reglas activas
+    if not active_rules:
+        print("No hay reglas activas. La clase por defecto será utilizada.")
+    else:
+        print(f"Reglas activas que contribuyen a la predicción: {[idx + 1 for idx in active_rules]}")
+    
+    # Mostrar la clase predicha
+    if not active_rules and predicted_class == 0:  # Verificar si es la clase por defecto
+        print("La predicción es la clase por defecto: Reprobado.")
+    else:
+        print(f"La clase predicha es {predicted_class_str}, derivada de las reglas activas.")
+
     # Mostrar cuáles reglas fueron activas
     print(f"Reglas activas: {[idx + 1 for idx in active_rules]}")
 
