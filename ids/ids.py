@@ -65,6 +65,7 @@ class IDSModel(BaseEstimator):
                 if rule.covers(x):  # Eliminado boolean_cols=self.boolean_cols
                     votes.append(rule.class_label)
             if votes:
+                print("Predicción hecha por votación de reglas u orden de aparición en set(votes) en caso de empate")
                 pred = max(set(votes), key=votes.count)
                 predictions.append(pred)
             else:
